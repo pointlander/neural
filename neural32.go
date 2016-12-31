@@ -203,16 +203,11 @@ func (c *Context32) BackPropagate(targets []float32, lRate, mFactor float32) flo
 	return 0
 }
 
-func (n *Neural32) Train(patterns [][][]float32, iterations int, lRate, mFactor float32) {
-	context, size := n.NewContext(), len(patterns)
-	randomized := make([][][]float32, size)
-	copy(randomized, patterns)
+func (n *Neural32) Train(source func(iteration int) [][][]float32, iterations int, lRate, mFactor float32) {
+	context := n.NewContext()
 
 	for i := 0; i < iterations; i++ {
-		for i := 0; i < size; i++ {
-			j := i + rand.Intn(size-i)
-			randomized[i], randomized[j] = randomized[j], randomized[i]
-		}
+		patterns := source(i)
 
 		for _, p := range patterns {
 			context.SetInput(p[0])

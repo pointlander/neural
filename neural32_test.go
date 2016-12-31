@@ -13,6 +13,10 @@ var patterns = [][][]float32{
 	{{1, 1}, {0}},
 }
 
+var source = func(iterations int) [][][]float32 {
+	return patterns
+}
+
 func ExampleSimpleNeural32() {
 	rand.Seed(0)
 
@@ -21,7 +25,7 @@ func ExampleSimpleNeural32() {
 	}
 	n := NewNeural32(config)
 
-	n.Train(patterns, 1000, 0.6, 0.4)
+	n.Train(source, 1000, 0.6, 0.4)
 
 	n.test(patterns)
 
@@ -41,7 +45,7 @@ func ExampleRegressionNeural32() {
 	}
 	n := NewNeural32(config)
 
-	n.Train(patterns, 1000, 0.6, 0.4)
+	n.Train(source, 1000, 0.6, 0.4)
 
 	n.test(patterns)
 
@@ -60,16 +64,25 @@ func ExampleDropoutNeural32() {
 		neural.EnableDropout(.2)
 	}
 	n := NewNeural32(config)
-
-	n.Train(patterns, 10000, 0.6, 0.4)
+	size := len(patterns)
+	randomized := make([][][]float32, size)
+	copy(randomized, patterns)
+	src := func(iterations int) [][][]float32 {
+		for i := 0; i < size; i++ {
+			j := i + rand.Intn(size-i)
+			randomized[i], randomized[j] = randomized[j], randomized[i]
+		}
+		return randomized
+	}
+	n.Train(src, 10000, 0.6, 0.4)
 
 	n.test(patterns)
 
 	// Output:
-	// [0 0] -> [0.025694605]  :  [0]
-	// [0 1] -> [0.99999964]  :  [1]
-	// [1 0] -> [0.9999012]  :  [1]
-	// [1 1] -> [0.044942077]  :  [0]
+	// [0 0] -> [4.2476386e-05]  :  [0]
+	// [0 1] -> [0.9996915]  :  [1]
+	// [1 0] -> [0.98703396]  :  [1]
+	// [1 1] -> [0.0011390819]  :  [0]
 }
 
 func ExampleDeepNeural32() {
@@ -80,7 +93,7 @@ func ExampleDeepNeural32() {
 	}
 	n := NewNeural32(config)
 
-	n.Train(patterns, 10000, 0.6, 0.4)
+	n.Train(source, 10000, 0.6, 0.4)
 
 	n.test(patterns)
 

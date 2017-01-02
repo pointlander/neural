@@ -200,21 +200,37 @@ func (c *Context32) BackPropagate(targets []float32, lRate, mFactor float32) flo
 		}
 	}
 
-	return 0
+	var e float32
+	for i := 0; i < len(targets); i++ {
+		f := targets[i] - c.Activations[depth-1][i]
+		e += f * f
+	}
+
+	return e
 }
 
-func (n *Neural32) Train(source func(iteration int) [][][]float32, iterations int, lRate, mFactor float32) {
-	context := n.NewContext()
+func (n *Neural32) Train(source func(iteration int) [][][]float32, iterations int, lRate, mFactor float32) []float32 {
+	context, errors := n.NewContext(), make([]float32, iterations)
 
 	for i := 0; i < iterations; i++ {
+		var (
+			e float32
+			n int
+		)
+
 		patterns := source(i)
 
 		for _, p := range patterns {
 			context.SetInput(p[0])
 			context.Infer()
-			context.BackPropagate(p[1], lRate, mFactor)
+			e += context.BackPropagate(p[1], lRate, mFactor)
+			n += len(p[1])
 		}
+
+		errors[i] = e / float32(n)
 	}
+
+	return errors
 }
 
 func (n *Neural32) test(patterns [][][]float32) {

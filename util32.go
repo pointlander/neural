@@ -37,3 +37,11 @@ func sigmoid32(x float32) float32 {
 func dsigmoid32(y float32) float32 {
 	return y * (1 - y)
 }
+
+func identity(x float32) float32 {
+	return x
+}
+
+func one(x float32) float32 {
+	return 1
+}

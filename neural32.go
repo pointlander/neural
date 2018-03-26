@@ -13,7 +13,7 @@ import (
 type Function32 func(x float32) float32
 
 type FunctionPair32 struct {
-	F, DF Function32
+	F, T, DF Function32
 }
 
 type Neural32 struct {
@@ -69,6 +69,7 @@ func (n *Neural32) Init(initializer WeightInitializer32, layers ...int) {
 	for f := range n.Functions {
 		n.Functions[f] = FunctionPair32{
 			F:  sigmoid32,
+			T:  identity,
 			DF: dsigmoid32,
 		}
 	}
@@ -76,23 +77,15 @@ func (n *Neural32) Init(initializer WeightInitializer32, layers ...int) {
 
 func (n *Neural32) EnableRegression() {
 	output := len(n.Functions) - 1
-	n.Functions[output].F = func(x float32) float32 {
-		return x
-	}
-	n.Functions[output].DF = func(x float32) float32 {
-		return 1
-	}
+	n.Functions[output].F = identity
+	n.Functions[output].DF = one
 }
 
 // http://iamtrask.github.io/2015/07/28/dropout/
 func (n *Neural32) EnableDropout(probability float32) {
 	depth := len(n.Layers) - 1
-	functions := make([]FunctionPair32, depth)
-	copy(functions, n.Functions)
-
 	for i := range n.Functions[:depth-1] {
-		n.Functions[i].F = func(x float32) float32 {
-			x = functions[i].F(x)
+		n.Functions[i].T = func(x float32) float32 {
 			if rand.Float32() > 1-probability {
 				x = 0
 			} else {
@@ -154,6 +147,27 @@ func (c *Context32) Infer() {
 	for j := range weights[:len(weights)] {
 		sum := dot32(activations, weights[j])
 		c.Activations[i+1][j] = c.Functions[i].F(sum)
+	}
+}
+
+func (c *Context32) InferWithT() {
+	depth := len(c.Layers) - 1
+
+	if depth > 1 {
+		for i := range c.Activations[:depth-1] {
+			activations, weights := c.Activations[i], c.Weights[i]
+			for j := range weights[:len(weights)-1] {
+				sum := dot32(activations, weights[j])
+				c.Activations[i+1][j] = c.Functions[i].T(c.Functions[i].F(sum))
+			}
+		}
+	}
+
+	i := depth - 1
+	activations, weights := c.Activations[i], c.Weights[i]
+	for j := range weights[:len(weights)] {
+		sum := dot32(activations, weights[j])
+		c.Activations[i+1][j] = c.Functions[i].T(c.Functions[i].F(sum))
 	}
 }
 
@@ -222,7 +236,7 @@ func (n *Neural32) Train(source func(iteration int) [][][]float32, iterations in
 
 		for _, p := range patterns {
 			context.SetInput(p[0])
-			context.Infer()
+			context.InferWithT()
 			e += context.BackPropagate(p[1], lRate, mFactor)
 			n += len(p[1])
 		}

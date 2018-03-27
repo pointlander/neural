@@ -75,6 +75,13 @@ func (n *Neural32) Init(initializer WeightInitializer32, layers ...int) {
 	}
 }
 
+func (n *Neural32) UseTanh() {
+	for f := range n.Functions {
+		n.Functions[f].F = tanh32
+		n.Functions[f].DF = dtanh32
+	}
+}
+
 func (n *Neural32) EnableRegression() {
 	output := len(n.Functions) - 1
 	n.Functions[output].F = identity

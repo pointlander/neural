@@ -38,6 +38,15 @@ func dsigmoid32(y float32) float32 {
 	return y * (1 - y)
 }
 
+func tanh32(x float32) float32 {
+	a, b := math.Exp(float64(x)), math.Exp(-float64(x))
+	return float32((a - b) / (a + b))
+}
+
+func dtanh32(x float32) float32 {
+	return 1 - x*x
+}
+
 func identity(x float32) float32 {
 	return x
 }

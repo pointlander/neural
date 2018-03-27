@@ -13,11 +13,22 @@ var patterns = [][][]float32{
 	{{1, 1}, {0}},
 }
 
+var patternsTanh = [][][]float32{
+	{{-1, -1}, {-1}},
+	{{-1, 1}, {1}},
+	{{1, -1}, {1}},
+	{{1, 1}, {-1}},
+}
+
 var source = func(iterations int) [][][]float32 {
 	return patterns
 }
 
-func ExampleSimpleNeural32() {
+var sourceTanh = func(iterations int) [][][]float32 {
+	return patternsTanh
+}
+
+func ExampleNeural32() {
 	rand.Seed(0)
 
 	config := func(neural *Neural32) {
@@ -36,7 +47,36 @@ func ExampleSimpleNeural32() {
 	// [1 1] -> [0.08947442]  :  [0]
 }
 
-func ExampleRegressionNeural32() {
+func ExampleNeural32_UseTanh() {
+	rand.Seed(0)
+
+	config := func(neural *Neural32) {
+		neural.Init(WeightInitializer32FanIn, 2, 2, 1)
+		neural.UseTanh()
+	}
+	n := NewNeural32(config)
+	size := len(patternsTanh)
+	randomized := make([][][]float32, size)
+	copy(randomized, patternsTanh)
+	src := func(iterations int) [][][]float32 {
+		for i := 0; i < size; i++ {
+			j := i + rand.Intn(size-i)
+			randomized[i], randomized[j] = randomized[j], randomized[i]
+		}
+		return randomized
+	}
+	n.Train(src, 1000, 0.6, 0.4)
+
+	n.test(patternsTanh)
+
+	// Output:
+	// [-1 -1] -> [-0.9955744]  :  [-1]
+	// [-1 1] -> [0.9861643]  :  [1]
+	// [1 -1] -> [0.9856719]  :  [1]
+	// [1 1] -> [-0.9887588]  :  [-1]
+}
+
+func ExampleNeural32_EnableRegression() {
 	rand.Seed(0)
 
 	config := func(neural *Neural32) {
@@ -56,7 +96,7 @@ func ExampleRegressionNeural32() {
 	// [1 1] -> [6.206334e-05]  :  [0]
 }
 
-func ExampleDropoutNeural32() {
+func ExampleNeural32_EnableDropout() {
 	rand.Seed(0)
 
 	config := func(neural *Neural32) {
@@ -85,7 +125,7 @@ func ExampleDropoutNeural32() {
 	// [1 1] -> [0.0011786821]  :  [0]
 }
 
-func ExampleDeepNeural32() {
+func ExampleNeural32_second() {
 	rand.Seed(0)
 
 	config := func(neural *Neural32) {

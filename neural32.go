@@ -10,12 +10,16 @@ import (
 	"math/rand"
 )
 
+// Function32 defines a function that takes a float32 and returns a float32
 type Function32 func(x float32) float32
 
+// FunctionPair32 represents a function, a derivative of the function, and a
+// transform used for inference during training
 type FunctionPair32 struct {
 	F, T, DF Function32
 }
 
+// Neural32 is a 32 bit neural network
 type Neural32 struct {
 	Layers    []int
 	Weights   [][][]float32
@@ -23,21 +27,26 @@ type Neural32 struct {
 	Functions []FunctionPair32
 }
 
-// http://stats.stackexchange.com/questions/47590/what-are-good-initial-weights-in-a-neural-network
+// WeightInitializer32 is a function that initializes the neural network weights
+// See: http://stats.stackexchange.com/questions/47590/what-are-good-initial-weights-in-a-neural-network
 type WeightInitializer32 func(in, out int) float32
 
+// WeightInitializer32Basic basic weight initialization
 func WeightInitializer32Basic(in, out int) float32 {
 	return random32(-1, 1)
 }
 
+// WeightInitializer32FanIn fan in weight initialization
 func WeightInitializer32FanIn(in, out int) float32 {
 	return random32(-1, 1) / float32(math.Sqrt(float64(in)))
 }
 
+// WeightInitializer32FanInFanOut fan in/fan out weight initialization
 func WeightInitializer32FanInFanOut(in, out int) float32 {
 	return random32(-1, 1) * float32(4*math.Sqrt(6/float64(in+out)))
 }
 
+// Init initializes the neural network
 func (n *Neural32) Init(initializer WeightInitializer32, layers ...int) {
 	depth := len(layers) - 1
 	if depth < 1 {
@@ -75,6 +84,7 @@ func (n *Neural32) Init(initializer WeightInitializer32, layers ...int) {
 	}
 }
 
+// UseTanh use tanh for the activation function
 func (n *Neural32) UseTanh() {
 	for f := range n.Functions {
 		n.Functions[f].F = tanh32
@@ -82,13 +92,16 @@ func (n *Neural32) UseTanh() {
 	}
 }
 
+// EnableRegression removes the activation function from the last layer so
+// that regression is performed
 func (n *Neural32) EnableRegression() {
 	output := len(n.Functions) - 1
 	n.Functions[output].F = identity
 	n.Functions[output].DF = one
 }
 
-// http://iamtrask.github.io/2015/07/28/dropout/
+// EnableDropout enables dropout based regularization
+// See: http://iamtrask.github.io/2015/07/28/dropout/
 func (n *Neural32) EnableDropout(probability float32) {
 	depth := len(n.Layers) - 1
 	for i := range n.Functions[:depth-1] {
@@ -103,25 +116,30 @@ func (n *Neural32) EnableDropout(probability float32) {
 	}
 }
 
+// NewNeural32 creates a neural network with the given configuration
 func NewNeural32(config func(neural *Neural32)) *Neural32 {
 	neural := &Neural32{}
 	config(neural)
 	return neural
 }
 
+// Context32 is an inference context
 type Context32 struct {
 	*Neural32
 	Activations [][]float32
 }
 
+// SetInput sets the input to the neural network
 func (c *Context32) SetInput(input []float32) {
 	copy(c.Activations[0], input)
 }
 
+// GetOutput gets the output of the neural network
 func (c *Context32) GetOutput() []float32 {
 	return c.Activations[len(c.Activations)-1]
 }
 
+// NewContext creates a new inference context from the given neural network
 func (n *Neural32) NewContext() *Context32 {
 	layers, depth := n.Layers, len(n.Layers)
 
@@ -136,6 +154,7 @@ func (n *Neural32) NewContext() *Context32 {
 	}
 }
 
+// Infer runs inference
 func (c *Context32) Infer() {
 	depth := len(c.Layers) - 1
 
@@ -157,6 +176,7 @@ func (c *Context32) Infer() {
 	}
 }
 
+// InferWithT runs inference using a transform in between layers
 func (c *Context32) InferWithT() {
 	depth := len(c.Layers) - 1
 
@@ -178,6 +198,7 @@ func (c *Context32) InferWithT() {
 	}
 }
 
+// BackPropagate run the backpropagation algorithm
 func (c *Context32) BackPropagate(targets []float32, lRate, mFactor float32) float32 {
 	depth, layers := len(c.Layers), c.Layers
 
@@ -230,6 +251,7 @@ func (c *Context32) BackPropagate(targets []float32, lRate, mFactor float32) flo
 	return e
 }
 
+// Train trains a neural network using data from source
 func (n *Neural32) Train(source func(iteration int) [][][]float32, iterations int, lRate, mFactor float32) []float32 {
 	context, errors := n.NewContext(), make([]float32, iterations)
 

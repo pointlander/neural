@@ -26,3 +26,6 @@ https://news.ycombinator.com/item?id=16860247
 https://news.ycombinator.com/item?id=16829099  
 http://jackterwilliger.com/biological-neural-networks-part-i-spiking-neurons/  
 
+# Programming with a Differentiable Forth Interpreter
+https://arxiv.org/abs/1605.06640  
+https://github.com/uclmr/d4  

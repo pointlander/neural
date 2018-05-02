@@ -29,3 +29,6 @@ http://jackterwilliger.com/biological-neural-networks-part-i-spiking-neurons/
 # Programming with a Differentiable Forth Interpreter
 https://arxiv.org/abs/1605.06640  
 https://github.com/uclmr/d4  
+
+# Intel SPMD Program Compiler
+https://ispc.github.io/  

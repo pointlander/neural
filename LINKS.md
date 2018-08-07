@@ -32,3 +32,8 @@ https://github.com/uclmr/d4
 
 # Intel SPMD Program Compiler
 https://ispc.github.io/  
+
+# The Octonion Math That Could Underpin Physics
+https://news.ycombinator.com/item?id=17575585  
+https://medium.com/intuitionmachine/should-deep-learning-use-complex-numbers-edbd3aac3fb8  
+

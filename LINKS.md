@@ -37,3 +37,9 @@ https://ispc.github.io/
 https://news.ycombinator.com/item?id=17575585  
 https://medium.com/intuitionmachine/should-deep-learning-use-complex-numbers-edbd3aac3fb8  
 
+# Program Synthesis
+https://arxiv.org/pdf/1608.04428.pdf  
+https://github.com/51alg/TerpreT  
+https://news.ycombinator.com/item?id=17599521  
+https://alexpolozov.com/blog/program-synthesis-2018/  
+

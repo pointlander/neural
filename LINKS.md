@@ -42,4 +42,5 @@ https://arxiv.org/pdf/1608.04428.pdf
 https://github.com/51alg/TerpreT  
 https://news.ycombinator.com/item?id=17599521  
 https://alexpolozov.com/blog/program-synthesis-2018/  
-
+https://news.ycombinator.com/item?id=17499062  
+https://homes.cs.washington.edu/~bornholt/post/building-synthesizer.html  
